@@ -10,6 +10,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Create release if not exist
+      shell: bash
+      run: |
+        if ! gh release view ${{ inputs.release_tag }} >/dev/null 2>&1; then
+          gh release create ${{ inputs.release_tag }} --title "${{ inputs.release_tag }}" --notes "Auto created" --draft=false --prerelease=false
+        fi
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+
     - id: get-size
       run: echo "size=$(stat -c %s ${{ inputs.zip_path }})" >> $GITHUB_OUTPUT
       shell: bash
@@ -21,4 +30,5 @@ runs:
     - run: gh release upload ${{ inputs.release_tag }} ${{ inputs.zip_path }}* --clobber
       shell: bash
       env:
+
         GH_TOKEN: ${{ inputs.github_token }}
